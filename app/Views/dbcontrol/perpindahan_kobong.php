@@ -48,7 +48,7 @@
                     <div class="card-body">
                         <div class="form-group">
                             <label for="template_download" class="mr-3"> Template file excel :</label>
-                            <a href="/templateExcel/perpindahan_kobong.xlsx" id="template_download" class="btn btn-primary" download="perpindahan_kobong">Download Template File</a>
+                            <a href="<?= base_url()?>/templateExcel/perpindahan_kobong.xlsx" id="template_download" class="btn btn-primary" download="perpindahan_kobong">Download Template File</a>
                         </div>
                         <div class="form-group">
                             <label for="exampleInputFile">File input</label>

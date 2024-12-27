@@ -1,0 +1,20 @@
+{
+  "title": "Piket Rayyon UBK",
+  "type": "Jadwal PA",
+  "date_start": "24/12/2024",
+  "date_end": "03/01/2025",
+  "data": {
+    "1734998400": ["M Alfard Zaelani", "Rifky Maulana I"],
+    "1735084800": ["M Reza Sharif H", "M Akbar Alhafizh"],
+    "1735171200": ["Valdis Dzakwan D", "Aditya Ainu N"],
+    "1735257600": ["Yazid Al Bustomi", "M Fardan Ardiansyah"],
+    "1735344000": ["M Faiz Al Faridz", "Reivano Tirta P"],
+    "1735430400": ["M Alfan Al Hafiz", "M Fikri Al"],
+    "1735516800": ["Rafa Adhiya A", "Umron Abdul H"],
+    "1735603200": ["M Raga Subagja", "Rehan Ramadhan"],
+    "1735689600": ["Rafif Taufiqurohman", "Agan Novalsyah"],
+    "1735776000": ["Ghaisan Sakti D A", "Ilham Wijaya K"],
+    "1735862400": ["M Fauzan Jamil"]
+  },
+  "NB": [""]
+}

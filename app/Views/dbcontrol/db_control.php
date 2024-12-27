@@ -181,7 +181,7 @@
 <div class="modal fade" id="modalSantri" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <form action="<?= base_url() ?>datacontrol/db-control/update/santri" method="post">
+            <form action="<?= base_url() ?>datacontrol/db-control/update/santri" method="post" id="santri_form">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLongTitle">Edit data</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -191,6 +191,7 @@
                 <div class="modal-body">
                     <div class="col-12">
                         <input type="hidden" name="santri_id" id="santri_id">
+                        <input type="hidden" name="drop" id="drop">
                         <div class="form-group">
                             <label for="nama" class="col-form-label">Nama lengkap:</label>
                             <input type="text" class="form-control " id="nama" name="nama_lengkap">
@@ -230,6 +231,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="drop_button">Drop</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" onclick="submit()">Save</button>
 
@@ -298,6 +300,28 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="alert_drop" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <form action="<?= base_url() ?>datacontrol/db-control/update/drop" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Warning!!</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h5>Anda yakin ingin mengeluarkan santri dari database?</h5>
+                    <input type="hidden" name="drop_id" id="drop_id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" onclick="submit()">Drop</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <?= $this->endSection() ?>
 <?= $this->section('script') ?>
 <!-- Select2 -->
@@ -318,9 +342,15 @@
 <script src="../../plugins/datatables-buttons/js/buttons.print.min.js"></script>
 <script src="../../plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
 <script>
-    // kelas = JSON.parse('<?= $kelas_json ?>');
     slected = null;
-    data = <?= $santri_json ?>;
+    document.getElementById("drop_button").addEventListener("click",() => {
+    drop()
+})
+    function drop() {
+        $('#modalSantri').modal('hide');
+        $('#alert_drop').modal('show');
+        document.getElementById('drop_id').value = document.getElementById('santri_id').value
+    }
     $(function() {
         bsCustomFileInput.init();
         $("#kobong-input").select2({
@@ -341,7 +371,6 @@
             "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
         });
     });
-
     function edit(e) {
         element = e;
         if (slected == e.parentElement) {
@@ -399,5 +428,6 @@
             e.parentElement.style.background = "#AFEEEE";
         }
     }
+    data = <?= $santri_json ?>;
 </script>
 <?= $this->endSection() ?>

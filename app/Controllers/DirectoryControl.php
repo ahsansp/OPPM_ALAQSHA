@@ -58,6 +58,7 @@ class DirectoryControl extends BaseController
         }
         $file['file'] = json_encode($file);
         $file['saved'] = true;
+        // dd($file);
         if ($jenis == 'Jadwal Imam') {
             return view('Form/printImam', $file);
         } else {
@@ -90,6 +91,20 @@ class DirectoryControl extends BaseController
         $folderPath = str_replace($bs, '/', $folderPath);
         $name = $this->request->getVar('name');
         $data = file_get_contents($folderPath . "/" . $name . ".json");
-        return view('Form/print', json_decode($data, true));
+        $data = json_decode($data, true);
+        $data["file"] = json_encode($data);
+        $data["saved"] = true;
+        // dd($data);
+        if ($data["type"] == "Jadwal Imam") {
+            return view('Form/printImam',$data);
+        }
+        return view('Form/print', $data);
+    }
+
+    public function delete($name)
+    {
+        $folderPath = WRITEPATH . 'form';
+        unlink($folderPath . "/" . $name . ".json");
+        return redirect()->to(base_url() . '/directorycontrol');
     }
 }

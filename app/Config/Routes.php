@@ -16,6 +16,7 @@ $routes->post('/register', 'Auth::register');
 $routes->get('query-check', 'QueryCheck::index');
 // -- Admin --
 $routes->group('', ['filter' => 'Admin'], function ($routes) {
+    $routes->get('account','AccountControl::index');
     $routes->get('/', 'Main::index');
     // -- home --
     $routes->get('/error', 'Home::index');
@@ -44,12 +45,14 @@ $routes->group('', ['filter' => 'Admin'], function ($routes) {
     $routes->get('/absen/rekap/print', 'Absen::print');
     $routes->post('/absen/rekap/print', 'Absen::rekap_absen');
     $routes->post('/absen/rekap/print-tahunan', 'Absen::print_tahunan');
+    $routes->get('/absen/rekap/print-rekapan', 'Absen::print_rekapan');
 
     // -- Directory Control --
     $routes->get('directorycontrol', 'DirectoryControl::index');
     $routes->post('directorycontrol', 'DirectoryControl::upload');
     $routes->post('directorycontrol/file_name', 'DirectoryControl::file_name');
     $routes->get('directorycontrol/open', 'DirectoryControl::open');
+    $routes->get('directorycontrol/delete/(:any)', 'DirectoryControl::delete/$1');
 
     // -- db control --
     $routes->get('datacontrol/kenaikan-kelas', 'DataControl::kenaikan_kelas');
@@ -65,10 +68,12 @@ $routes->group('', ['filter' => 'Admin'], function ($routes) {
     $routes->get('datacontrol/santri-baru/update', 'DataControl::santri_baru_update');
     $routes->get('datacontrol/santri-baru/cencel', 'DataControl::santri_baru_cencel');
     $routes->get('datacontrol/db-control', 'DataControl::db_control');
+    
 
     $routes->post('datacontrol/db-control/update/santri', 'DataControl::db_control_update_santri');
     $routes->post('datacontrol/db-control/update/kelas', 'DataControl::db_control_update_kelas');
     $routes->post('datacontrol/db-control/update/kobong', 'DataControl::db_control_update_kobong');
+    $routes->post('datacontrol/db-control/update/drop', 'DataControl::db_control_update_drop');
 });
 // -- User --
 $routes->group('', ['filter' => 'User'], function ($routes) {

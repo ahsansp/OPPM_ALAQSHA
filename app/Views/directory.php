@@ -33,6 +33,7 @@
                             <td>name</td>
                             <td>type</td>
                             <td>date</td>
+                            <td>action</td>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,6 +46,7 @@
                                 <td><a href="<?= base_url() ?>directorycontrol/open?name=<?= $file["title"] ?>"><?= $file["title"] ?></a></td>
                                 <td><?= $file["type"] ?></td>
                                 <td><?= $file["date"] ?></td>
+                                <td style="display:flex;justify-content:center"><a class="btn btn-danger" href="./directorycontrol/delete/<?= $file["title"] ?>" role="button">Delete</a></td>
                             </tr>
 
                         <?php

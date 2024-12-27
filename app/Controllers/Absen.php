@@ -369,6 +369,7 @@ class Absen extends BaseController
     }
     public function rekap_absen()
     {
+        $log = [];
         $post = $this->request->getVar();
         // dd($post);
         $date = explode(' - ', $post['date']);
@@ -388,7 +389,9 @@ class Absen extends BaseController
             $db->orLike('absen_kamar.jenis_absen', 'isya');
             $db->groupEnd();
         } elseif ($post['jenis_absen'] == 'kobong') {
+            $log[] = "where kobong";
             $db->where('absen_kamar.jenis_absen', 'kobong');
+            $log[] = $db;
         }
         $db->where('absen_kamar.tanggal >=', $start_date)
             ->where('absen_kamar.tanggal <=', $end_date);
@@ -413,7 +416,6 @@ class Absen extends BaseController
         $ket = ['H', 'S', 'A', 'P', 'I', 'D'];
 
 
-
         if ($post['jenis_absen'] == 'shalat') {
             foreach ($santri as $san) {
                 $ress[$san['nama_lengkap']] = [];
@@ -428,17 +430,139 @@ class Absen extends BaseController
             foreach ($absen as $abs) {
                 $ress[$abs['nama_lengkap']][$abs['tanggal']][$abs['keterangan_id']] = $ress[$abs['nama_lengkap']][$abs['tanggal']][$abs['keterangan_id']] + 1;
             }
-            $data = [
-                'tanggal' => $tanggal,
-                'absen' => $ress,
-                'kobong' => $post['kobong'],
-                'jenis_absen' => $post['jenis_absen'],
-                'list_kobong' => $this->kobongModel->findColumn('kobong')
-            ];
-        } elseif ($post['jenis_absen'] == 'kobong') {
-        }
-        // dd($data);
+            // dd($santri,$absen,$tanggal,$ket,$log,$ress);
 
+            
+        } elseif ($post['jenis_absen'] == 'kobong') {
+            foreach($santri as $san) {
+                $ress[$san["nama_lengkap"]] = [];
+                foreach($tanggal as $tgl) {
+                    $ress[$san["nama_lengkap"]][$tgl] = "";
+                }
+            }
+            foreach($absen as $abs){
+                $ress[$abs["nama_lengkap"]][$abs["tanggal"]] = $abs["keterangan_id"];
+            }
+        }
+        
+        // dd($santri,$absen,$tanggal,$ket,$log,$ress);
+        // dd($data);
+        $data = [
+            'tanggal' => $tanggal,
+            'absen' => $ress,
+            'kobong' => $post['kobong'],
+            'jenis_absen' => $post['jenis_absen'],
+            'list_kobong' => $this->kobongModel->findColumn('kobong')
+        ];
+        session()->set("rekap tabel",$data);
         return view('/Absen/print_rekap', $data);
+    }
+    public function print_rekapan(){
+        function indexToCol($index){
+            return \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index);
+        }
+        $ses = session();
+        if ($ses->get("rekap tabel") == null) {
+            exit();
+        }
+        $rekap_tabel = $ses->get("rekap tabel");
+        $spreadsheet = new Spreadsheet();
+        $activeWorksheet = $spreadsheet->getActiveSheet();
+        // dd($rekap_tabel);
+        if ($rekap_tabel["jenis_absen"] == "kobong") {
+            $activeWorksheet->setCellValue('A1', 'NO');
+            $activeWorksheet->getColumnDimension('A')->setAutoSize(true);
+            $activeWorksheet->setCellValue('B1', 'NAMA');
+            $activeWorksheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $activeWorksheet->getStyle('A1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+            $activeWorksheet->getStyle('B1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $activeWorksheet->getStyle('B1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+            $row = 1;
+            $colIndex = 3;
+            foreach($rekap_tabel["tanggal"] as $tgl){
+                $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex++);
+                $activeWorksheet->setCellValue($col . "1", $tgl);
+                $activeWorksheet->getStyle($col . "1")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                $activeWorksheet->getColumnDimension($col)->setAutoSize(true);
+            }
+            $row++;
+            foreach($rekap_tabel["absen"] as $nama => $abs){
+                $colIndex = 1;
+                $activeWorksheet->setCellValue(indexToCol($colIndex++) . $row, $row - 1);
+                $activeWorksheet->setCellValue(indexToCol($colIndex++) . $row, $nama);
+                $activeWorksheet->getColumnDimension("A")->setAutoSize(true);
+                $activeWorksheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                $activeWorksheet->getStyle('A' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+                $activeWorksheet->getColumnDimension("B")->setAutoSize(true);
+                foreach($abs as $tgl => $ket){
+                    $activeWorksheet->setCellValue(indexToCol($colIndex) . $row, $ket);
+                    $activeWorksheet->getStyle(indexToCol($colIndex) . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    $activeWorksheet->getStyle(indexToCol($colIndex++) . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+                }
+                $row++;
+            }
+        }elseif($rekap_tabel["jenis_absen"] == "shalat"){
+            $activeWorksheet->mergeCells('A1:A2');
+            $activeWorksheet->setCellValue('A1', 'NO');
+            $activeWorksheet->getColumnDimension('A')->setAutoSize(true);
+            $activeWorksheet->mergeCells('B1:B2');
+            $activeWorksheet->setCellValue('B1', 'NAMA');
+            $activeWorksheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $activeWorksheet->getStyle('A1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+            $activeWorksheet->getStyle('B1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $activeWorksheet->getStyle('B1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+            $colIndex = 3;
+            $row = 1;
+            foreach($rekap_tabel["tanggal"] as $tgl) {
+                // dd(indexToCol($colIndex));
+                $range = indexToCol($colIndex) . $row . ":" .  indexToCol($colIndex + 5) . $row;
+                $activeWorksheet->mergeCells($range);
+                $activeWorksheet->setCellValue(indexToCol($colIndex) . $row, $tgl);
+                $activeWorksheet->getStyle(indexToCol($colIndex) . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                $activeWorksheet->getStyle(indexToCol($colIndex) . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+                $colIndex += 6;
+            }
+            $colIndex = 3;
+            $row = 2;
+             foreach($rekap_tabel["tanggal"] as $tgl) {
+                $sholat = ['H', 'S', 'A', 'P', 'I','D'];
+                // $s_i = 0;
+                foreach ($sholat as $sh) {
+                    $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
+                    $activeWorksheet->setCellValue($col . $row, $sh);
+                    $activeWorksheet->getColumnDimension($col)->setAutoSize(true);
+                    // $activeWorksheet->getStyle($col . $row)->getAlignment()->setTextRotation(-90);
+                    $activeWorksheet->getStyle($col . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    $activeWorksheet->getStyle($col . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+                    $colIndex++;
+                };
+            }
+            $colIndex = 1;
+            $row = 3;
+            foreach($rekap_tabel["absen"] as $nama => $abs){
+                $colIndex = 1;
+                $activeWorksheet->setCellValue(indexToCol($colIndex++) . $row, $row - 2);
+                $activeWorksheet->setCellValue(indexToCol($colIndex++) . $row, $nama);
+                $activeWorksheet->getColumnDimension("A")->setAutoSize(true);
+                $activeWorksheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                $activeWorksheet->getStyle('A' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+                $activeWorksheet->getColumnDimension("B")->setAutoSize(true);
+                foreach($abs as $tgl => $kehadiran){
+                    foreach($kehadiran as $ket){
+                        $activeWorksheet->getStyle(indexToCol($colIndex) . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                        $activeWorksheet->getStyle(indexToCol($colIndex) . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+                        $activeWorksheet->setCellValue(indexToCol($colIndex++) . $row, $ket);
+                    }
+                }
+                $row++;
+            }
+        }
+        $writer = new Xlsx($spreadsheet);
+        // $writer->save('hello world.xlsx');
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="rekap.xlsx"');
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+        exit();
     }
 }

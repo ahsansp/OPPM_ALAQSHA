@@ -140,6 +140,7 @@ class FormPrint extends BaseController
     {
         $file_name = $this->request->getVar('nama');
         $file = $this->request->getVar('file');
+        // dd($file);
         $file = str_replace("%27", "'", $file);
         $file = json_decode($file, true);
         // dd($file_name, $file);

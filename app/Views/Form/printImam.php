@@ -174,7 +174,7 @@
     const xhr = new XMLHttpRequest();
 
     // Membuka koneksi ke server dengan metode POST dan secara asynchronous (true)
-    xhr.open('POST', 'http://localhost:8080/directorycontrol/file_name', true);
+    xhr.open('POST', '<?= base_url()?>directorycontrol/file_name', true);
 
     // Mengatur header agar server tahu bahwa data yang dikirim adalah JSON
     xhr.setRequestHeader('Content-Type', 'application/json');

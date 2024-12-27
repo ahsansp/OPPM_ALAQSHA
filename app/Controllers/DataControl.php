@@ -7,6 +7,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\Main;
 use App\Models\Kelas;
 use App\Models\Kobong;
+use App\Models\Alumni;
 
 class DataControl extends BaseController
 {
@@ -267,6 +268,7 @@ class DataControl extends BaseController
             return redirect()->back()->withInput()->with('validation', \Config\Services::validation());
         }
         $file = $this->request->getFile('file');
+        // dd($file->getTempName());
         if ($file->isValid()) {
             // Membaca file tanpa menyimpannya di server
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getTempName());
@@ -295,6 +297,7 @@ class DataControl extends BaseController
                 ];
                 $row++;
             }
+            $log = [];
             $main = new Main();
             $kelas = new Kelas();
             $array_kelas = $kelas->findAll();
@@ -328,12 +331,13 @@ class DataControl extends BaseController
                 for ($j = 0; $j < count($santri); $j++) {
                     $data[$i]["angkatan"] = str_pad($data[$i]["angkatan"], 3, "0", STR_PAD_LEFT);
                     if (substr($santri[$j]["santri_id"], 0, 3) == $data[$i]["angkatan"]) {
+                        $log[$santri_id] = $santri[$j]["santri_id"];
                         if ($santri_id < (int)$santri[$j]["santri_id"]) {
                             $santri_id = (int)$santri[$j]["santri_id"];
                         }
                     }
                 }
-                $data[$i]["nama_con"] = $santri_id + 1;
+                $data[$i]["nama_con"] = $santri_id + 1; 
                 for ($j = 0; $j < $i; $j++) {
                     if ((int)$data[$i]["nama_con"] == (int)$data[$j]["nama_con"]) {
                         $data[$i]["nama_con"] = $data[$i]["nama_con"] + 1;
@@ -348,6 +352,7 @@ class DataControl extends BaseController
             } else {
                 $tabel = $data;
             }
+            // dd($log);
             session()->set("tabel_santri_baru", $tabel);
             return redirect()->to(base_url() . '/datacontrol/santri-baru');
         }
@@ -449,6 +454,30 @@ class DataControl extends BaseController
         $post = $this->request->getVar();
         // dd($post);
         $kobong->update($post["kobong_id"], ["kobong" => $post["kobong"]]);
+        return redirect()->to(base_url() . '/datacontrol/db-control');
+    }
+    public function db_control_update_drop(){
+        $santri = new Main();
+        $post = $this->request->getVar();
+        $row = $santri->select("santri.*,kobong.kobong,kelas.kmmi,kelas.umum")
+                ->join("kobong","kobong.id = santri.kobong_id")
+                ->join("kelas","kelas.id = santri.kelas_id")
+                ->where('santri_id', $post["drop_id"])
+                ->findAll();
+        $santri->where("santri_id",$post["drop_id"])
+                ->delete();
+        $alumni = new Alumni();
+        $data = [
+            [
+                'santri_id' => $row[0]["santri_id"],
+                'nama_lengkap' => $row[0]["nama_lengkap"],
+                'nama_pendek' => $row[0]["nama_pendek"],
+                'kelas_kmmi' => $row[0]["kmmi"],
+                'kelas_umum' => $row[0]["umum"],
+                'kobong' => $row[0]["kobong"],
+            ]
+        ];
+        $alumni->insertBatch($data);
         return redirect()->to(base_url() . '/datacontrol/db-control');
     }
 }

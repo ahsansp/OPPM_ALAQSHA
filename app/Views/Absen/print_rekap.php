@@ -73,6 +73,7 @@
                         </div>
                         <div class="col-3">
                             <button type="submit" class="btn btn-primary">rekap</button>
+                            <a class="btn btn-default" href="<?= base_url()?>absen/rekap/print-rekapan">print to excel</a>
                         </div>
                     </div>
                     <div class="col-12 table-responsive " <?= (!isset($none)) ? 'style="height: 500px;"' : '' ?>>
@@ -80,6 +81,8 @@
                             <thead>
                                 <?php
                                 if (!isset($none)) {
+                                if ($jenis_absen == "shalat") {
+                                
 
 
                                     echo '<tr>';
@@ -119,7 +122,41 @@
                             <?php
                                         $no++;
                                     endforeach;
-                                } ?>
+                                } 
+                            elseif($jenis_absen == "kobong"){
+                                ?>
+                                    <tr>
+                                        <th class="text-center" style="vertical-align: middle;">No</th>
+                                        <th class="text-center" style="vertical-align: middle;">Nama</th>
+                                        <?php
+                                            foreach($tanggal as $tgl):
+                                        ?>
+                                        <th class="text-center" style="vertical-align: middle;"><?= $tgl?></th>
+                                        <?php
+                                            endforeach;
+                                        ?>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <?php
+                                $no = 1;
+                                    foreach($absen as $nama => $abs):
+                                ?>
+                                    <tr>
+                                        <td class="text-center"><?= $no++ ?></td>
+                                        <td><?= $nama?></td>
+                                        <?php 
+                                            foreach($abs as $tgl => $ket):
+                                        ?>
+                                        <td class="text-center"><?=$ket?></td>
+                                        <?php
+                                            endforeach;  
+                                        ?>
+                                    </tr>
+                                <?php
+                                    endforeach;
+                            }}
+                                ?>
                             </tbody>
                         </table>
                     </div>
